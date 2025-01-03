@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-app
+
+  Sample SAM Template for sam-app
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  HelloWorldAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: Hello World API
+      StageName: Prod
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      PackageType: Image
+      ImageConfig:
+        Command: ["app.lambda_handler"]
+      Events:
+        HelloWorld:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref HelloWorldAPI
+            Path: ANY
+            Method: get
+        # ScheduleEvent:
+        #   Type: ScheduleV2
+        #   Properties:
+        #     ScheduleExpression: "rate(1 minute)"
+        # ComplexScheduleEvent:
+        #   Type: ScheduleV2
+        #   Properties:
+        #     ScheduleExpression: rate(1 minute)
+        #     FlexibleTimeWindow:
+        #       Mode: FLEXIBLE
+        #       MaximumWindowInMinutes: 5
+        #     ScheduleExpressionTimezone: UTC
+        #     RetryPolicy:
+        #       MaximumRetryAttempts: 5
+        #       MaximumEventAgeInSeconds: 300
+        #     DeadLetterConfig:
+        #       Type: SQS
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./src
+      DockerTag: v0.1.1
+
+Outputs:
+  HelloWorldApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${HelloWorldAPI}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  HelloWorldFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt HelloWorldFunction.Arn
+  HelloWorldFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt HelloWorldFunctionRole.Arn
